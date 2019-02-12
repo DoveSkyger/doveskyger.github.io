@@ -23,6 +23,6 @@ Powered by::
 
 .. toctree::
    :maxdepth: 2
-   :caption: Standard ML中的数据类型
+   :caption: 《飞驰人生》，献给所热爱的一切
 
-   SML_data_type
+   Review_of_pegasus
