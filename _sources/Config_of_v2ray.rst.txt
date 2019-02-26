@@ -1,0 +1,225 @@
+﻿.. contents::
+   :depth: 3
+..
+
+近日有感于一些网站无法访问的无奈，就动了科学爱国的念头。以前我都是买个 VPN 完事，但是因为一次偶尔看到了一种新型工具 -- V2Ray 的介绍，心里就有点蠢蠢欲动，开始了折腾。没想到这个软件的可玩性相当高，一玩就是一个星期，期间还使用了两种 web 内容提供软件 -- caddy 和 nginx ，并分别用两个软件搭建了自己的第一个 https 加密网站，感觉学到了很多，所以在这里记录一下。
+
+目前我试验了 V2Ray 的 vmess+kcp、shadowsocks+kcp、vmess+http2+tls+web 和 shadowsocks+websockets+tls+web 这四种配置，并最终停留在最后一种。网上的测评基本上是 V2Ray 的 vmess 协议要比 shadowsocks 协议快一些，当然我买的 vps 的 ping 值很高，速度也不快，这点差距就无视了，还有就是用 V2Ray 配置 shadowsocks 协议更加有趣。同时我还体验了 caddy 和 nginx 搭建网站的步骤，就目前的个人体会而言，caddy 的配置文件要远比 nginx 的简洁明了，尤其是在配置 https 加密的时候，caddy 自带免费证书申请续签，比 nginx 不知简单了多少，当然据说 nginx 的性能要好一些，毕竟 caddy 是 go 语言写的，不过如果是初配置的话还是用 caddy 吧，另外 nginx 不支持 http2 反向代理，所以如果使用 vmess+http2+tls+web 的组合的话也只有用 caddy 了，有人好像用 apache 搭建过，有兴趣的可以尝试一下。我这里只是把相关的配置文件做一个整理，具体的搭建过程可以看\ `V2Ray的官方教程 <https://www.v2ray.com/>`_ 和 \ `白话文教程 <https://toutyrater.github.io/>`_ 。
+
+1、vmess+kcp
+############
+
+kcp是一种传输协议，提供了一些加速和数据伪装等一些功能，在一些延迟比较高的vps中，可以使用这种技术来实现网络加速，同时这个协议可以通过修改数据头实现流量伪装，比如伪装成微信视频、bt下载等。vmess是V2Ray团队实现的一种新型加密传输协议，按照 \ `白话文教程 <https://toutyrater.github.io/>`_ 的说法，比 shadowsocks 协议更安全、速度更快。我查了一下才发现 kcp 协议好像是国内的 skywind 团队实现的，知乎上有其帐号 \ `韦易笑 <https://www.zhihu.com/people/skywind3000/>`_ ，虽然我不是很喜欢这个人，但是东西做的不错还是值得点赞的。服务器端与客户端的配置文件如下，如果你要使用可以把 example.org 改成你的 vps 的 ip 地址或者网址，id 也改成你的 uid，当然要注意格式。
+
+服务器端：
+
+.. code::
+
+    {
+        "log": {
+            "error": "/var/log/v2ray/error.log",
+            "loglevel": "warning"
+        },
+        "inbound": {
+            "protocol": "vmess",
+            "port": 10086,
+            "settings": {
+                "clients": [
+                    {
+                        "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                        "alterId": 64,
+                        "level": 1
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "mkcp",
+                "kcpSettings": {
+                    "uplinkCapacity": 5,
+                    "downlinkCapacity": 100,
+                    "congestion": true,
+                    "header": {
+                        "type": "utp"
+                    }
+                }
+            }
+        },
+        "outbounds": [
+            {
+                "protocol": "freedom",
+                "tag": "direct",
+                "settings": {}
+            },
+            {
+                "protocol": "blackhole",
+                "tag": "blocked",
+                "settings": {}
+            }
+        ],
+        "routing": {
+            "domainStrategy": "AsIs",
+            "rules": [
+                {
+                    "type": "field",
+                    "ip": [
+                        "0.0.0.0/8",
+                        "10.0.0.0/8",
+                        "100.64.0.0/10",
+                        "127.0.0.0/8",
+                        "169.254.0.0/16",
+                        "172.16.0.0/12",
+                        "192.0.0.0/24",
+                        "192.0.2.0/24",
+                        "192.168.0.0/16",
+                        "198.18.0.0/15",
+                        "198.51.100.0/24",
+                        "203.0.113.0/24",
+                        "::1/128",
+                        "fc00::/7",
+                        "fe80::/10"
+                    ],
+                    "outboundTag": "blocked"
+                }
+            ]
+        }
+    }
+
+客户端：
+
+.. code::
+
+    {
+        "log": {
+            "error": "C:\\Users\\Sky\\Downloads\\PortableApps\\v2ray\\error.log",
+            "loglevel": "warning"
+        },
+        "inbounds": [
+            {
+                "protocol": "socks",
+                "port": 1080,
+                "sniffing": {
+                    "enabled": true,
+                    "destOverride": ["http", "tls"]
+                },
+                "settings": {
+                    "auth": "noauth",
+                    "udp": true
+                }
+            }
+        ],
+        "outbounds": [
+            {
+                "protocol": "vmess",
+                "settings": {
+                    "vnext": [
+                        {
+                            "address": "45.76.96.210",
+                            "port": 10086,
+                            "users": [
+                                {
+                                    "id": "e719b1fd-b3aa-46c0-afdd-210fa7629202",
+                                    "alterId": 64,
+                                    "security": "aes-128-gcm",
+                                    "level": 1
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "streamSettings": {
+                    "network": "mkcp",
+                    "kcpSettings": {
+                        "uplinkCapacity": 5,
+                        "downlinkCapacity": 100,
+                        "congestion": true,
+                        "header": {
+                            "type": "utp"
+                        }
+                    }
+                }
+            },
+            {
+                "protocol": "freedom",
+                "settings": {},
+                "tag": "direct"
+            },
+            {
+                "tag":"blocked",
+                "protocol":"blackhole",
+                "settings":{}
+            }
+        ],
+        "routing": {
+            "domainStrategy": "IPOnDemand",
+            "rules": [
+                {
+                    "type": "field",
+                    "port": "54-79",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "port": "81-442",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "port": "444-65535",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "domain": [
+                        "gc.kis.scr.kaspersky-labs.com"
+                    ],
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "domain": [
+                        "geosite:cn"
+                    ],
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "ip": [
+                        "geoip:cn",
+                        "geoip:private"
+                    ],
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "chinasites",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "chinaip",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "ip": [
+                        "0.0.0.0/8",
+                        "10.0.0.0/8",
+                        "100.64.0.0/10",
+                        "127.0.0.0/8",
+                        "169.254.0.0/16",
+                        "172.16.0.0/12",
+                        "192.0.0.0/24",
+                        "192.0.2.0/24",
+                        "192.168.0.0/16",
+                        "198.18.0.0/15",
+                        "198.51.100.0/24",
+                        "203.0.113.0/24",
+                        "::1/128",
+                        "fc00::/7",
+                        "fe80::/10"
+                    ],
+                    "outboundTag": "direct"
+                }
+            ]
+        }
+    }
+
+2019/2/26

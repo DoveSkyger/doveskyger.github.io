@@ -26,3 +26,9 @@ Powered by::
    :caption: 《飞驰人生》，献给所热爱的一切
 
    Review_of_pegasus
+
+.. toctree::
+   :maxdepth: 2
+   :caption: V2Ray -- 一种新型的科学爱国方法配置笔记
+
+   Config_of_v2ray
