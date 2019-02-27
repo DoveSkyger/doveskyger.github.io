@@ -90,6 +90,10 @@
 <p class="caption"><span class="caption-text">V2Ray -- 一种新型的科学爱国方法配置笔记</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">1、vmess+kcp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#shadowsocks-kcp">2、shadowsocks+kcp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#vmess-http2-tls-web">3、vmess+http2+tls+web</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#shadowsocks-websockets-tls-web">4、shadowsocks+websockets+tls+web</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#id5">5、总结</a></li>
 </ul>
 
             
@@ -157,14 +161,18 @@
   <div class="contents topic" id="id1">
 <p class="topic-title first">目录</p>
 <ul class="simple">
-<li><a class="reference internal" href="#vmess-kcp" id="id5">1、vmess+kcp</a></li>
+<li><a class="reference internal" href="#vmess-kcp" id="id6">1、vmess+kcp</a></li>
+<li><a class="reference internal" href="#shadowsocks-kcp" id="id7">2、shadowsocks+kcp</a></li>
+<li><a class="reference internal" href="#vmess-http2-tls-web" id="id8">3、vmess+http2+tls+web</a></li>
+<li><a class="reference internal" href="#shadowsocks-websockets-tls-web" id="id9">4、shadowsocks+websockets+tls+web</a></li>
+<li><a class="reference internal" href="#id5" id="id10">5、总结</a></li>
 </ul>
 </div>
 <p>近日有感于一些网站无法访问的无奈，就动了科学爱国的念头。以前我都是买个 VPN 完事，但是因为一次偶尔看到了一种新型工具 – V2Ray 的介绍，心里就有点蠢蠢欲动，开始了折腾。没想到这个软件的可玩性相当高，一玩就是一个星期，期间还使用了两种 web 内容提供软件 – caddy 和 nginx ，并分别用两个软件搭建了自己的第一个 https 加密网站，感觉学到了很多，所以在这里记录一下。</p>
 <p>目前我试验了 V2Ray 的 vmess+kcp、shadowsocks+kcp、vmess+http2+tls+web 和 shadowsocks+websockets+tls+web 这四种配置，并最终停留在最后一种。网上的测评基本上是 V2Ray 的 vmess 协议要比 shadowsocks 协议快一些，当然我买的 vps 的 ping 值很高，速度也不快，这点差距就无视了，还有就是用 V2Ray 配置 shadowsocks 协议更加有趣。同时我还体验了 caddy 和 nginx 搭建网站的步骤，就目前的个人体会而言，caddy 的配置文件要远比 nginx 的简洁明了，尤其是在配置 https 加密的时候，caddy 自带免费证书申请续签，比 nginx 不知简单了多少，当然据说 nginx 的性能要好一些，毕竟 caddy 是 go 语言写的，不过如果是初配置的话还是用 caddy 吧，另外 nginx 不支持 http2 反向代理，所以如果使用 vmess+http2+tls+web 的组合的话也只有用 caddy 了，有人好像用 apache 搭建过，有兴趣的可以尝试一下。我这里只是把相关的配置文件做一个整理，具体的搭建过程可以看<a class="reference external" href="https://www.v2ray.com/">V2Ray的官方教程</a> 和 <a class="reference external" href="https://toutyrater.github.io/">白话文教程</a> 。</p>
 <div class="section" id="vmess-kcp">
-<h1><a class="toc-backref" href="#id5">1、vmess+kcp</a><a class="headerlink" href="#vmess-kcp" title="永久链接至标题">¶</a></h1>
-<p>kcp是一种传输协议，提供了一些加速和数据伪装等一些功能，在一些延迟比较高的vps中，可以使用这种技术来实现网络加速，同时这个协议可以通过修改数据头实现流量伪装，比如伪装成微信视频、bt下载等。vmess是V2Ray团队实现的一种新型加密传输协议，按照 <a class="reference external" href="https://toutyrater.github.io/">白话文教程</a> 的说法，比 shadowsocks 协议更安全、速度更快。我查了一下才发现 kcp 协议好像是国内的 skywind 团队实现的，知乎上有其帐号 <a class="reference external" href="https://www.zhihu.com/people/skywind3000/">韦易笑</a> ，虽然我不是很喜欢这个人，但是东西做的不错还是值得点赞的。服务器端与客户端的配置文件如下，如果你要使用可以把 example.org 改成你的 vps 的 ip 地址或者网址，id 也改成你的 uid，当然要注意格式。</p>
+<h1><a class="toc-backref" href="#id6">1、vmess+kcp</a><a class="headerlink" href="#vmess-kcp" title="永久链接至标题">¶</a></h1>
+<p>kcp是一种传输协议，提供了一些加速和数据伪装等一些功能，在一些延迟比较高的vps中，可以使用这种技术来实现网络加速，同时这个协议可以通过修改数据头实现流量伪装，比如伪装成微信视频、bt 下载等。vmess 是 V2Ray 团队实现的一种新型加密传输协议，按照 <a class="reference external" href="https://toutyrater.github.io/">白话文教程</a> 的说法，比 shadowsocks 协议更安全、速度更快。我查了一下才发现 kcp 协议好像是国内的 skywind 团队实现的，知乎上有其帐号 <a class="reference external" href="https://www.zhihu.com/people/skywind3000/">韦易笑</a> ，虽然我不是很喜欢这个人，但是东西做的不错还是值得点赞的。服务器端与客户端的配置文件如下，如果你要使用可以把 example.org 改成你的 vps 的 ip 地址或者网址，id 也改成你的 uid，当然要注意格式。Sphinx 不支持 json 语法高亮，凑合着看吧。</p>
 <p>服务器端：</p>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;log&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -262,11 +270,11 @@
             <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;vnext&quot;</span><span class="p">:</span> <span class="p">[</span>
                     <span class="p">{</span>
-                        <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;45.76.96.210&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;example.org&quot;</span><span class="p">,</span>
                         <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">10086</span><span class="p">,</span>
                         <span class="s2">&quot;users&quot;</span><span class="p">:</span> <span class="p">[</span>
                             <span class="p">{</span>
-                                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e719b1fd-b3aa-46c0-afdd-210fa7629202&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx&quot;</span><span class="p">,</span>
                                 <span class="s2">&quot;alterId&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
                                 <span class="s2">&quot;security&quot;</span><span class="p">:</span> <span class="s2">&quot;aes-128-gcm&quot;</span><span class="p">,</span>
                                 <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="mi">1</span>
@@ -372,6 +380,828 @@
 <span class="p">}</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="shadowsocks-kcp">
+<h1><a class="toc-backref" href="#id7">2、shadowsocks+kcp</a><a class="headerlink" href="#shadowsocks-kcp" title="永久链接至标题">¶</a></h1>
+<p>shadowsocks 大家都很熟悉了吧，很知名的加密传输协议，当然作者被请喝茶了（笑）。V2Ray 也集成了 shadowsocks 的功能，同时相比原版的 shadowsocks 程序实现了诸如 kcp 等配置功能，据说速度也比原版速度更快。用 V2Ray 配置 shadowsocks 可以说是一种邪道用法，如果没有啥特殊原因不建议使用，相比 vmess 没什么优势。如果你要使用可以把 address 和 password 改一下，email 可填可不填。</p>
+<p>服务器端：</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;log&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;/var/log/v2ray/error.log&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;loglevel&quot;</span><span class="p">:</span> <span class="s2">&quot;warning&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;inbound&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;shadowsocks&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">10086</span><span class="p">,</span>
+        <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;aes-128-gcm&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;xxxxxxxxxxxxxxxx&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;streamSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;mkcp&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;kcpSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;uplinkCapacity&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+                <span class="s2">&quot;downlinkCapacity&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                <span class="s2">&quot;congestion&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+                <span class="s2">&quot;header&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;utp&quot;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;outbounds&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;freedom&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;blackhole&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;blocked&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{}</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;routing&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;domainStrategy&quot;</span><span class="p">:</span> <span class="s2">&quot;AsIs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rules&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;ip&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;0.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;10.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;100.64.0.0/10&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;127.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;169.254.0.0/16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;172.16.0.0/12&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.0.0.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.0.2.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.168.0.0/16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;198.18.0.0/15&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;198.51.100.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;203.0.113.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;::1/128&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fc00::/7&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fe80::/10&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;blocked&quot;</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>客户端：</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;log&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">Sky</span><span class="se">\\</span><span class="s2">Downloads</span><span class="se">\\</span><span class="s2">PortableApps</span><span class="se">\\</span><span class="s2">v2ray</span><span class="se">\\</span><span class="s2">error.log&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;loglevel&quot;</span><span class="p">:</span> <span class="s2">&quot;warning&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;inbounds&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;socks&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">1080</span><span class="p">,</span>
+            <span class="s2">&quot;sniffing&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+                <span class="s2">&quot;destOverride&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;http&quot;</span><span class="p">,</span> <span class="s2">&quot;tls&quot;</span><span class="p">]</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;auth&quot;</span><span class="p">:</span> <span class="s2">&quot;noauth&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;udp&quot;</span><span class="p">:</span> <span class="n">true</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;outbounds&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;shadowsocks&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;servers&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;email&quot;</span><span class="p">:</span><span class="s2">&quot;xxxx@example.com&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;example.org&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">10086</span><span class="p">,</span>
+                        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;aes-128-gcm&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;xxxxxxxxxxxxxxxx&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="mi">1</span>
+                    <span class="p">}</span>
+                <span class="p">]</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;streamSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;mkcp&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;kcpSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;uplinkCapacity&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+                    <span class="s2">&quot;downlinkCapacity&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                    <span class="s2">&quot;congestion&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+                    <span class="s2">&quot;header&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;utp&quot;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;freedom&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;tag&quot;</span><span class="p">:</span><span class="s2">&quot;blocked&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span><span class="s2">&quot;blackhole&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:{}</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;routing&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;domainStrategy&quot;</span><span class="p">:</span> <span class="s2">&quot;IPOnDemand&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rules&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="s2">&quot;54-79&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="s2">&quot;81-442&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="s2">&quot;444-65535&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;gc.kis.scr.kaspersky-labs.com&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;geosite:cn&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;ip&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;geoip:cn&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;geoip:private&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;chinasites&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;chinaip&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;ip&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;0.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;10.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;100.64.0.0/10&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;127.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;169.254.0.0/16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;172.16.0.0/12&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.0.0.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.0.2.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.168.0.0/16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;198.18.0.0/15&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;198.51.100.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;203.0.113.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;::1/128&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fc00::/7&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fe80::/10&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="vmess-http2-tls-web">
+<h1><a class="toc-backref" href="#id8">3、vmess+http2+tls+web</a><a class="headerlink" href="#vmess-http2-tls-web" title="永久链接至标题">¶</a></h1>
+<p>http2 是 http1 协议的升级版，为啥要用 http2 协议我也不清楚。当然重点是 tls+web 的配置可以让流量完全伪装为正常的 https 网站，同时对数据进行加密，防止 GFW 检测到你的数据和你的 vps 的真实 ip 地址。这个配置还可以搭配 cdn 中转，实现高速过墙，即使主机 ip 被墙了也不影响。不过免费的 cdn 提供商 cloudflare 太慢了，我试了一下感觉不太好，如果有钱可以考虑一些收费的 cdn 提供商。总之这个配置的优点是隐秘性较高，不容易被封 ip，但是 websockets 的速度不如 tcp，所以可能速度上会慢一些。用的是 caddy，具体的安装很简单，网上有教程的。<a class="reference external" href="mailto:xxxx&#37;&#52;&#48;example&#46;com">xxxx<span>&#64;</span>example<span>&#46;</span>com</a> 是你的邮箱地址，path 可以随便填一个。</p>
+<p>服务器端：</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;log&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;/var/log/v2ray/error.log&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;loglevel&quot;</span><span class="p">:</span> <span class="s2">&quot;warning&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;inbound&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;vmess&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;listen&quot;</span><span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">10086</span><span class="p">,</span>
+        <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;clients&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;alterId&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
+                    <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="mi">1</span>
+                <span class="p">}</span>
+            <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;streamSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;h2&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;security&quot;</span><span class="p">:</span> <span class="s2">&quot;tls&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;httpSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/path&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;example.org&quot;</span><span class="p">]</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;tlsSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;serverName&quot;</span><span class="p">:</span> <span class="s2">&quot;example.org&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;certificates&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;certificateFile&quot;</span><span class="p">:</span> <span class="s2">&quot;/etc/v2ray/v2ray.crt&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;keyFile&quot;</span><span class="p">:</span> <span class="s2">&quot;/etc/v2ray/v2ray.key&quot;</span>
+                    <span class="p">}</span>
+                <span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;outbounds&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;freedom&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;blackhole&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;blocked&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{}</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;routing&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;domainStrategy&quot;</span><span class="p">:</span> <span class="s2">&quot;AsIs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rules&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;ip&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;0.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;10.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;100.64.0.0/10&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;127.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;169.254.0.0/16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;172.16.0.0/12&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.0.0.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.0.2.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.168.0.0/16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;198.18.0.0/15&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;198.51.100.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;203.0.113.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;::1/128&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fc00::/7&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fe80::/10&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;blocked&quot;</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>客户端：</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;log&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">Sky</span><span class="se">\\</span><span class="s2">Downloads</span><span class="se">\\</span><span class="s2">PortableApps</span><span class="se">\\</span><span class="s2">v2ray</span><span class="se">\\</span><span class="s2">error.log&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;loglevel&quot;</span><span class="p">:</span> <span class="s2">&quot;warning&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;inbounds&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;socks&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">1080</span><span class="p">,</span>
+            <span class="s2">&quot;sniffing&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+                <span class="s2">&quot;destOverride&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;http&quot;</span><span class="p">,</span> <span class="s2">&quot;tls&quot;</span><span class="p">]</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;auth&quot;</span><span class="p">:</span> <span class="s2">&quot;noauth&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;udp&quot;</span><span class="p">:</span> <span class="n">true</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;outbounds&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;vmess&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;vnext&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;example.org&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">443</span><span class="p">,</span>
+                        <span class="s2">&quot;users&quot;</span><span class="p">:</span> <span class="p">[</span>
+                            <span class="p">{</span>
+                                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;alterId&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
+                                <span class="s2">&quot;security&quot;</span><span class="p">:</span> <span class="s2">&quot;aes-128-gcm&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="mi">1</span>
+                            <span class="p">}</span>
+                        <span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="p">]</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;mux&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+                <span class="s2">&quot;concurrency&quot;</span><span class="p">:</span> <span class="mi">8</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;streamSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;h2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;security&quot;</span><span class="p">:</span> <span class="s2">&quot;tls&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;tlsSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;serverName&quot;</span><span class="p">:</span> <span class="s2">&quot;example.org&quot;</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;httpSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="s2">&quot;example.org&quot;</span>
+                    <span class="p">],</span>
+                    <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/path&quot;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;freedom&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;tag&quot;</span><span class="p">:</span><span class="s2">&quot;blocked&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span><span class="s2">&quot;blackhole&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:{}</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;routing&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;domainStrategy&quot;</span><span class="p">:</span> <span class="s2">&quot;IPOnDemand&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rules&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="s2">&quot;54-79&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="s2">&quot;81-442&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="s2">&quot;444-65535&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;gc.kis.scr.kaspersky-labs.com&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;geosite:cn&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;ip&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;geoip:cn&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;geoip:private&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;chinasites&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;chinaip&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;ip&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;0.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;10.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;100.64.0.0/10&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;127.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;169.254.0.0/16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;172.16.0.0/12&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.0.0.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.0.2.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.168.0.0/16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;198.18.0.0/15&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;198.51.100.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;203.0.113.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;::1/128&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fc00::/7&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fe80::/10&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Caddy 配置文件 Caddyfile：</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">:</span><span class="mi">80</span> <span class="p">{</span>
+    <span class="n">root</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">www</span>
+    <span class="n">gzip</span> <span class="p">{</span>
+        <span class="n">ext</span> <span class="o">.</span><span class="n">html</span> <span class="o">.</span><span class="n">htm</span> <span class="o">.</span><span class="n">php</span>
+        <span class="n">level</span> <span class="mi">6</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">example</span><span class="o">.</span><span class="n">org</span> <span class="p">{</span>
+    <span class="n">redir</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">example</span><span class="o">.</span><span class="n">org</span><span class="p">{</span><span class="n">url</span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">example</span><span class="o">.</span><span class="n">org</span> <span class="p">{</span>
+    <span class="n">root</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">www</span><span class="o">/</span>
+
+    <span class="n">tls</span> <span class="n">xxxx</span><span class="nd">@examaple</span><span class="o">.</span><span class="n">com</span> <span class="p">{</span>
+        <span class="n">ciphers</span> <span class="n">ECDHE</span><span class="o">-</span><span class="n">ECDSA</span><span class="o">-</span><span class="n">WITH</span><span class="o">-</span><span class="n">CHACHA20</span><span class="o">-</span><span class="n">POLY1305</span> <span class="n">ECDHE</span><span class="o">-</span><span class="n">ECDSA</span><span class="o">-</span><span class="n">AES256</span><span class="o">-</span><span class="n">GCM</span><span class="o">-</span><span class="n">SHA384</span> <span class="n">ECDHE</span><span class="o">-</span><span class="n">ECDSA</span><span class="o">-</span><span class="n">AES256</span><span class="o">-</span><span class="n">CBC</span><span class="o">-</span><span class="n">SHA</span>
+        <span class="n">curves</span> <span class="n">p384</span>
+        <span class="n">key_type</span> <span class="n">p384</span>
+    <span class="p">}</span>
+
+    <span class="n">proxy</span> <span class="o">/</span><span class="n">path</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">10086</span> <span class="p">{</span>
+        <span class="n">insecure_skip_verify</span>
+        <span class="n">header_upstream</span> <span class="n">X</span><span class="o">-</span><span class="n">Forwarded</span><span class="o">-</span><span class="n">Proto</span> <span class="s2">&quot;https&quot;</span>
+        <span class="n">header_upstream</span> <span class="n">Host</span> <span class="s2">&quot;example.org&quot;</span>
+    <span class="p">}</span>
+
+    <span class="n">header</span> <span class="o">/</span> <span class="p">{</span>
+        <span class="n">Strict</span><span class="o">-</span><span class="n">Transport</span><span class="o">-</span><span class="n">Security</span> <span class="s2">&quot;max-age=31536000;&quot;</span>
+        <span class="n">X</span><span class="o">-</span><span class="n">XSS</span><span class="o">-</span><span class="n">Protection</span> <span class="s2">&quot;1; mode=block&quot;</span>
+        <span class="n">X</span><span class="o">-</span><span class="n">Content</span><span class="o">-</span><span class="n">Type</span><span class="o">-</span><span class="n">Options</span> <span class="s2">&quot;nosniff&quot;</span>
+        <span class="n">X</span><span class="o">-</span><span class="n">Frame</span><span class="o">-</span><span class="n">Options</span> <span class="s2">&quot;DENY&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="shadowsocks-websockets-tls-web">
+<h1><a class="toc-backref" href="#id9">4、shadowsocks+websockets+tls+web</a><a class="headerlink" href="#shadowsocks-websockets-tls-web" title="永久链接至标题">¶</a></h1>
+<p>这个是我最后使用的配置，一般来说常用的配置是 vmess+websockets+tls+web，这种配置安全性比较高，因此很多人在搭建 V2Ray 时会选择这种方案。其中 https 加密也可以用 caddy 实现，而且比 nginx 更简单，当然我这里用的是 nginx+acme.sh 的组合实现的，其中 nginx 提供 web 页面内容，acme.sh 提供免费证书和自动续签。不过我在使用 nginx 的时候发现网上的很多教程是无法使用的，acme.sh 根本无法获取证书，原因就在于没有配置 80 端口的访问权限，这个问题困扰了我好几天，直到在一个 issue 上找到了解决办法，就是在 acme.sh 的读取路径配置添加 allow all。这里贴一下我的配置，如果有遇到问题可以参考一下。另外这个配置里我把一些没必要的配置给删除了，配置文件看起来更简洁，上面的方案应该也可以简化一下的。</p>
+<p>服务器端：</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;log&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;/var/log/v2ray/error.log&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;loglevel&quot;</span><span class="p">:</span> <span class="s2">&quot;warning&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;inbound&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;shadowsocks&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;listen&quot;</span><span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">10086</span><span class="p">,</span>
+        <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;aes-128-gcm&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;xxxxxxxxxxxxxxxx&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;streamSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;ws&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;wsSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/path&quot;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;outbounds&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;freedom&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;blackhole&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;blocked&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{}</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;routing&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;domainStrategy&quot;</span><span class="p">:</span> <span class="s2">&quot;AsIs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rules&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;ip&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;0.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;10.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;100.64.0.0/10&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;127.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;169.254.0.0/16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;172.16.0.0/12&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.0.0.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.0.2.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.168.0.0/16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;198.18.0.0/15&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;198.51.100.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;203.0.113.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;::1/128&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fc00::/7&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fe80::/10&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;blocked&quot;</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>客户端：</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;log&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">Sky</span><span class="se">\\</span><span class="s2">Downloads</span><span class="se">\\</span><span class="s2">PortableApps</span><span class="se">\\</span><span class="s2">v2ray</span><span class="se">\\</span><span class="s2">error.log&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;loglevel&quot;</span><span class="p">:</span> <span class="s2">&quot;warning&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;inbounds&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;socks&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">1080</span><span class="p">,</span>
+            <span class="s2">&quot;sniffing&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+                <span class="s2">&quot;destOverride&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;http&quot;</span><span class="p">,</span> <span class="s2">&quot;tls&quot;</span><span class="p">]</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;auth&quot;</span><span class="p">:</span> <span class="s2">&quot;noauth&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;udp&quot;</span><span class="p">:</span> <span class="n">true</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;outbounds&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;shadowsocks&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;servers&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;example.org&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">443</span><span class="p">,</span>
+                        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;aes-128-gcm&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;xxxxxxxxxxxxxxxx&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="mi">1</span>
+                    <span class="p">}</span>
+                <span class="p">]</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;mux&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+                <span class="s2">&quot;concurrency&quot;</span><span class="p">:</span> <span class="mi">8</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;streamSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;ws&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;security&quot;</span><span class="p">:</span> <span class="s2">&quot;tls&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;tlsSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;serverName&quot;</span><span class="p">:</span> <span class="s2">&quot;example.org&quot;</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;wsSettings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="s2">&quot;example.org&quot;</span>
+                    <span class="p">],</span>
+                <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/path&quot;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;freedom&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;tag&quot;</span><span class="p">:</span><span class="s2">&quot;blocked&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;protocol&quot;</span><span class="p">:</span><span class="s2">&quot;blackhole&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;settings&quot;</span><span class="p">:{}</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;routing&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;domainStrategy&quot;</span><span class="p">:</span> <span class="s2">&quot;IPOnDemand&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rules&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="s2">&quot;54-79&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="s2">&quot;81-442&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="s2">&quot;444-65535&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;gc.kis.scr.kaspersky-labs.com&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;geosite:cn&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;ip&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;geoip:cn&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;geoip:private&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;chinasites&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;chinaip&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;field&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;ip&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;0.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;10.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;100.64.0.0/10&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;127.0.0.0/8&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;169.254.0.0/16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;172.16.0.0/12&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.0.0.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.0.2.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;192.168.0.0/16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;198.18.0.0/15&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;198.51.100.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;203.0.113.0/24&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;::1/128&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fc00::/7&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fe80::/10&quot;</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;outboundTag&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Nginx 80 端口配置文件 default：</p>
+<div class="code nginx highlight-default notranslate"><div class="highlight"><pre><span></span>##
+# You should look at the following URL&#39;s in order to grasp a solid understanding
+# of Nginx configuration files in order to fully unleash the power of Nginx.
+# https://www.nginx.com/resources/wiki/start/
+# https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls/
+# https://wiki.debian.org/Nginx/DirectoryStructure
+#
+# In most cases, administrators will remove this file from sites-enabled/ and
+# leave it as reference inside of sites-available where it will continue to be
+# updated by the nginx packaging team.
+#
+# This file will automatically load configuration files provided by other
+# applications, such as Drupal or Wordpress. These applications will be made
+# available underneath a path with that package name, such as /drupal8.
+#
+# Please see /usr/share/doc/nginx-doc/examples/ for more detailed examples.
+##
+
+# Default server configuration
+#
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+
+        # SSL configuration
+        #
+        # listen 443 ssl default_server;
+        # listen [::]:443 ssl default_server;
+        #
+        # Note: You should disable gzip for SSL traffic.
+        # See: https://bugs.debian.org/773332
+        #
+        # Read up on ssl_ciphers to ensure a secure configuration.
+        # See: https://bugs.debian.org/765782
+        #
+        # Self signed certs generated by the ssl-cert package
+        # Don&#39;t use them in a production server!
+        #
+        # include snippets/snakeoil.conf;
+
+        root /var/www/html;
+
+        # Add index.php to the list if you are using PHP
+        index index.html index.htm index.nginx-debian.html;
+
+        server_name _;
+
+        location / {
+               return 301 https://$host$request_uri;
+        }
+
+        location ^~ /.well-known/acme-challenge/ {
+                default_type &quot;text/plain&quot;;
+                root /var/www/html;
+                allow all;
+        }
+
+        location = /.well-known/acme-challenge/ {
+                try_files $uri =404;
+        }
+
+        # pass PHP scripts to FastCGI server
+        #
+        #location ~ \.php$ {
+        #       include snippets/fastcgi-php.conf;
+        #
+        #       # With php-fpm (or other unix sockets):
+        #       fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+        #       # With php-cgi (or other tcp sockets):
+        #       fastcgi_pass 127.0.0.1:9000;
+        #}
+
+        # deny access to .htaccess files, if Apache&#39;s document root
+        # concurs with nginx&#39;s one
+        #
+        #location ~ /\.ht {
+        #       deny all;
+        #}
+}
+
+# Virtual Host configuration for example.com
+#
+# You can move that to a different file under sites-available/ and symlink that
+# to sites-enabled/ to enable it.
+#
+#server {
+#       listen 80;
+#       listen [::]:80;
+#
+#       server_name example.com;
+#
+#       root /var/www/example.com;
+#       index index.html;
+#
+#       location / {
+#               try_files $uri $uri/ =404;
+#       }
+#}
+</pre></div>
+</div>
+<p>Nginx 443 端口配置文件 example.org：</p>
+<div class="code nginx highlight-default notranslate"><div class="highlight"><pre><span></span>server {
+        listen 443 ssl http2 fastopen=128 reuseport;
+        listen [::]:443 ssl http2 fastopen=128 reuseport;
+        server_name example.org;
+
+        ssl_dhparam /etc/nginx/ssl/dhparam.pem;
+        ssl_certificate /etc/nginx/ssl/example.org.cer;
+        ssl_certificate_key /etc/nginx/ssl/example.org.key;
+        ssl_session_timeout 1d;
+        ssl_session_cache shared:SSL:50m;
+        ssl_session_tickets off;
+        ssl_protocols TLSv1.2;
+        ssl_prefer_server_ciphers on;
+        ssl_ciphers &#39;ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES25$
+
+        add_header Strict-Transport-Security max-age=15768000;
+        add_header X-Frame-Options SAMEORIGIN;
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection &quot;1; mode=block&quot;;
+
+        server_tokens off;
+        ssl_stapling on;
+        ssl_stapling_verify on;
+
+        location / {
+                try_files $uri $uri/ =404;
+        }
+
+        location /path {
+                proxy_redirect off;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection &quot;upgrade&quot;;
+                proxy_set_header Host $http_host;
+                proxy_intercept_errors on;
+
+                # Show realip in v2ray access.log
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header Host $host;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+                if ($http_upgrade = &quot;websocket&quot; ){
+                        proxy_pass http://127.0.0.1:10086;
+                }
+        }
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h1><a class="toc-backref" href="#id10">5、总结</a><a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h1>
+<p>这上面的四个配置里，前两个比较简单，配置文件 copy 过去然后改一改就能用，后面两个的难度就比较大，需要对 linux 系统、https 网站的搭建等有一些经验才行，我就是因为没有搭建网站的经验所以在使用 nginx 的时候处处碰壁。由于这不是一个教程，所以基本上看了也不会配，主要是互联网上教程不胜枚举，github 上也有一些模板文件可供参考，再整一个类似的没什么意义。以上。</p>
 <p>2019/2/26</p>
 </div>
 

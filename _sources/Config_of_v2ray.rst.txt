@@ -9,7 +9,7 @@
 1、vmess+kcp
 ############
 
-kcp是一种传输协议，提供了一些加速和数据伪装等一些功能，在一些延迟比较高的vps中，可以使用这种技术来实现网络加速，同时这个协议可以通过修改数据头实现流量伪装，比如伪装成微信视频、bt下载等。vmess是V2Ray团队实现的一种新型加密传输协议，按照 \ `白话文教程 <https://toutyrater.github.io/>`_ 的说法，比 shadowsocks 协议更安全、速度更快。我查了一下才发现 kcp 协议好像是国内的 skywind 团队实现的，知乎上有其帐号 \ `韦易笑 <https://www.zhihu.com/people/skywind3000/>`_ ，虽然我不是很喜欢这个人，但是东西做的不错还是值得点赞的。服务器端与客户端的配置文件如下，如果你要使用可以把 example.org 改成你的 vps 的 ip 地址或者网址，id 也改成你的 uid，当然要注意格式。
+kcp是一种传输协议，提供了一些加速和数据伪装等一些功能，在一些延迟比较高的vps中，可以使用这种技术来实现网络加速，同时这个协议可以通过修改数据头实现流量伪装，比如伪装成微信视频、bt 下载等。vmess 是 V2Ray 团队实现的一种新型加密传输协议，按照 \ `白话文教程 <https://toutyrater.github.io/>`_ 的说法，比 shadowsocks 协议更安全、速度更快。我查了一下才发现 kcp 协议好像是国内的 skywind 团队实现的，知乎上有其帐号 \ `韦易笑 <https://www.zhihu.com/people/skywind3000/>`_ ，虽然我不是很喜欢这个人，但是东西做的不错还是值得点赞的。服务器端与客户端的配置文件如下，如果你要使用可以把 example.org 改成你的 vps 的 ip 地址或者网址，id 也改成你的 uid，当然要注意格式。Sphinx 不支持 json 语法高亮，凑合着看吧。
 
 服务器端：
 
@@ -113,11 +113,11 @@ kcp是一种传输协议，提供了一些加速和数据伪装等一些功能�
                 "settings": {
                     "vnext": [
                         {
-                            "address": "45.76.96.210",
+                            "address": "example.org",
                             "port": 10086,
                             "users": [
                                 {
-                                    "id": "e719b1fd-b3aa-46c0-afdd-210fa7629202",
+                                    "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
                                     "alterId": 64,
                                     "security": "aes-128-gcm",
                                     "level": 1
@@ -221,5 +221,849 @@ kcp是一种传输协议，提供了一些加速和数据伪装等一些功能�
             ]
         }
     }
+
+2、shadowsocks+kcp
+##################
+
+shadowsocks 大家都很熟悉了吧，很知名的加密传输协议，当然作者被请喝茶了（笑）。V2Ray 也集成了 shadowsocks 的功能，同时相比原版的 shadowsocks 程序实现了诸如 kcp 等配置功能，据说速度也比原版速度更快。用 V2Ray 配置 shadowsocks 可以说是一种邪道用法，如果没有啥特殊原因不建议使用，相比 vmess 没什么优势。如果你要使用可以把 address 和 password 改一下，email 可填可不填。
+
+服务器端：
+
+.. code::
+
+    {
+        "log": {
+            "error": "/var/log/v2ray/error.log",
+            "loglevel": "warning"
+        },
+        "inbound": {
+            "protocol": "shadowsocks",
+            "port": 10086,
+            "settings": {
+                "method": "aes-128-gcm",
+                "password": "xxxxxxxxxxxxxxxx",
+                "level": 1
+            },
+            "streamSettings": {
+                "network": "mkcp",
+                "kcpSettings": {
+                    "uplinkCapacity": 5,
+                    "downlinkCapacity": 100,
+                    "congestion": true,
+                    "header": {
+                        "type": "utp"
+                    }
+                }
+            }
+        },
+        "outbounds": [
+            {
+                "protocol": "freedom",
+                "tag": "direct",
+                "settings": {}
+            },
+            {
+                "protocol": "blackhole",
+                "tag": "blocked",
+                "settings": {}
+            }
+        ],
+        "routing": {
+            "domainStrategy": "AsIs",
+            "rules": [
+                {
+                    "type": "field",
+                    "ip": [
+                        "0.0.0.0/8",
+                        "10.0.0.0/8",
+                        "100.64.0.0/10",
+                        "127.0.0.0/8",
+                        "169.254.0.0/16",
+                        "172.16.0.0/12",
+                        "192.0.0.0/24",
+                        "192.0.2.0/24",
+                        "192.168.0.0/16",
+                        "198.18.0.0/15",
+                        "198.51.100.0/24",
+                        "203.0.113.0/24",
+                        "::1/128",
+                        "fc00::/7",
+                        "fe80::/10"
+                    ],
+                    "outboundTag": "blocked"
+                }
+            ]
+        }
+    }
+
+客户端：
+
+.. code::
+
+    {
+        "log": {
+            "error": "C:\\Users\\Sky\\Downloads\\PortableApps\\v2ray\\error.log",
+            "loglevel": "warning"
+        },
+        "inbounds": [
+            {
+                "protocol": "socks",
+                "port": 1080,
+                "sniffing": {
+                    "enabled": true,
+                    "destOverride": ["http", "tls"]
+                },
+                "settings": {
+                    "auth": "noauth",
+                    "udp": true
+                }
+            }
+        ],
+        "outbounds": [
+            {
+                "protocol": "shadowsocks",
+                "settings": {
+                    "servers": [
+                        {
+                            "email":"xxxx@example.com",
+                            "address": "example.org",
+                            "port": 10086,
+                            "method": "aes-128-gcm",
+                            "password": "xxxxxxxxxxxxxxxx",
+                            "level": 1
+                        }
+                    ]
+                },
+                "streamSettings": {
+                    "network": "mkcp",
+                    "kcpSettings": {
+                        "uplinkCapacity": 5,
+                        "downlinkCapacity": 100,
+                        "congestion": true,
+                        "header": {
+                            "type": "utp"
+                        }
+                    }
+                }
+            },
+            {
+                "protocol": "freedom",
+                "settings": {},
+                "tag": "direct"
+            },
+            {
+                "tag":"blocked",
+                "protocol":"blackhole",
+                "settings":{}
+            }
+        ],
+        "routing": {
+            "domainStrategy": "IPOnDemand",
+            "rules": [
+                {
+                    "type": "field",
+                    "port": "54-79",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "port": "81-442",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "port": "444-65535",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "domain": [
+                        "gc.kis.scr.kaspersky-labs.com"
+                    ],
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "domain": [
+                        "geosite:cn"
+                    ],
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "ip": [
+                        "geoip:cn",
+                        "geoip:private"
+                    ],
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "chinasites",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "chinaip",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "ip": [
+                        "0.0.0.0/8",
+                        "10.0.0.0/8",
+                        "100.64.0.0/10",
+                        "127.0.0.0/8",
+                        "169.254.0.0/16",
+                        "172.16.0.0/12",
+                        "192.0.0.0/24",
+                        "192.0.2.0/24",
+                        "192.168.0.0/16",
+                        "198.18.0.0/15",
+                        "198.51.100.0/24",
+                        "203.0.113.0/24",
+                        "::1/128",
+                        "fc00::/7",
+                        "fe80::/10"
+                    ],
+                    "outboundTag": "direct"
+                }
+            ]
+        }
+    }
+
+3、vmess+http2+tls+web
+######################
+
+http2 是 http1 协议的升级版，为啥要用 http2 协议我也不清楚。当然重点是 tls+web 的配置可以让流量完全伪装为正常的 https 网站，同时对数据进行加密，防止 GFW 检测到你的数据和你的 vps 的真实 ip 地址。这个配置还可以搭配 cdn 中转，实现高速过墙，即使主机 ip 被墙了也不影响。不过免费的 cdn 提供商 cloudflare 太慢了，我试了一下感觉不太好，如果有钱可以考虑一些收费的 cdn 提供商。总之这个配置的优点是隐秘性较高，不容易被封 ip，但是 websockets 的速度不如 tcp，所以可能速度上会慢一些。用的是 caddy，具体的安装很简单，网上有教程的。xxxx@example.com 是你的邮箱地址，path 可以随便填一个。
+
+服务器端：
+
+.. code::
+
+    {
+        "log": {
+            "error": "/var/log/v2ray/error.log",
+            "loglevel": "warning"
+        },
+        "inbound": {
+            "protocol": "vmess",
+            "listen": "127.0.0.1",
+            "port": 10086,
+            "settings": {
+                "clients": [
+                    {
+                        "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx",
+                        "alterId": 64,
+                        "level": 1
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "h2",
+                "security": "tls",
+                "httpSettings": {
+                    "path": "/path",
+                    "host": ["example.org"]
+                },
+                "tlsSettings": {
+                    "serverName": "example.org",
+                    "certificates": [
+                        {
+                            "certificateFile": "/etc/v2ray/v2ray.crt",
+                            "keyFile": "/etc/v2ray/v2ray.key"
+                        }
+                    ]
+                }
+            }
+        },
+        "outbounds": [
+            {
+                "protocol": "freedom",
+                "tag": "direct",
+                "settings": {}
+            },
+            {
+                "protocol": "blackhole",
+                "tag": "blocked",
+                "settings": {}
+            }
+        ],
+        "routing": {
+            "domainStrategy": "AsIs",
+            "rules": [
+                {
+                    "type": "field",
+                    "ip": [
+                        "0.0.0.0/8",
+                        "10.0.0.0/8",
+                        "100.64.0.0/10",
+                        "127.0.0.0/8",
+                        "169.254.0.0/16",
+                        "172.16.0.0/12",
+                        "192.0.0.0/24",
+                        "192.0.2.0/24",
+                        "192.168.0.0/16",
+                        "198.18.0.0/15",
+                        "198.51.100.0/24",
+                        "203.0.113.0/24",
+                        "::1/128",
+                        "fc00::/7",
+                        "fe80::/10"
+                    ],
+                    "outboundTag": "blocked"
+                }
+            ]
+        }
+    }
+
+客户端：
+
+.. code::
+
+    {
+        "log": {
+            "error": "C:\\Users\\Sky\\Downloads\\PortableApps\\v2ray\\error.log",
+            "loglevel": "warning"
+        },
+        "inbounds": [
+            {
+                "protocol": "socks",
+                "port": 1080,
+                "sniffing": {
+                    "enabled": true,
+                    "destOverride": ["http", "tls"]
+                },
+                "settings": {
+                    "auth": "noauth",
+                    "udp": true
+                }
+            }
+        ],
+        "outbounds": [
+            {
+                "protocol": "vmess",
+                "settings": {
+                    "vnext": [
+                        {
+                            "address": "example.org",
+                            "port": 443,
+                            "users": [
+                                {
+                                    "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                                    "alterId": 64,
+                                    "security": "aes-128-gcm",
+                                    "level": 1
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "mux": {
+                    "enabled": true,
+                    "concurrency": 8
+                },
+                "streamSettings": {
+                    "network": "h2",
+                    "security": "tls",
+                    "tlsSettings": {
+                        "serverName": "example.org"
+                    },
+                    "httpSettings": {
+                        "host": [
+                            "example.org"
+                        ],
+                        "path": "/path"
+                    }
+                }
+            },
+            {
+                "protocol": "freedom",
+                "settings": {},
+                "tag": "direct"
+            },
+            {
+                "tag":"blocked",
+                "protocol":"blackhole",
+                "settings":{}
+            }
+        ],
+        "routing": {
+            "domainStrategy": "IPOnDemand",
+            "rules": [
+                {
+                    "type": "field",
+                    "port": "54-79",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "port": "81-442",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "port": "444-65535",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "domain": [
+                        "gc.kis.scr.kaspersky-labs.com"
+                    ],
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "domain": [
+                        "geosite:cn"
+                    ],
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "ip": [
+                        "geoip:cn",
+                        "geoip:private"
+                    ],
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "chinasites",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "chinaip",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "ip": [
+                        "0.0.0.0/8",
+                        "10.0.0.0/8",
+                        "100.64.0.0/10",
+                        "127.0.0.0/8",
+                        "169.254.0.0/16",
+                        "172.16.0.0/12",
+                        "192.0.0.0/24",
+                        "192.0.2.0/24",
+                        "192.168.0.0/16",
+                        "198.18.0.0/15",
+                        "198.51.100.0/24",
+                        "203.0.113.0/24",
+                        "::1/128",
+                        "fc00::/7",
+                        "fe80::/10"
+                    ],
+                    "outboundTag": "direct"
+                }
+            ]
+        }
+    }
+
+Caddy 配置文件 Caddyfile：
+
+.. code::
+
+    :80 {
+        root /var/www
+        gzip {
+            ext .html .htm .php
+            level 6
+        }
+    }
+
+    http://example.org {
+        redir https://example.org{url}
+    }
+
+    https://example.org {
+        root /var/www/
+
+        tls xxxx@examaple.com {
+            ciphers ECDHE-ECDSA-WITH-CHACHA20-POLY1305 ECDHE-ECDSA-AES256-GCM-SHA384 ECDHE-ECDSA-AES256-CBC-SHA
+            curves p384
+            key_type p384
+        }
+
+        proxy /path https://localhost:10086 {
+            insecure_skip_verify
+            header_upstream X-Forwarded-Proto "https"
+            header_upstream Host "example.org"
+        }
+
+        header / {
+            Strict-Transport-Security "max-age=31536000;"
+            X-XSS-Protection "1; mode=block"
+            X-Content-Type-Options "nosniff"
+            X-Frame-Options "DENY"
+        }
+    }
+
+4、shadowsocks+websockets+tls+web
+#################################
+
+这个是我最后使用的配置，一般来说常用的配置是 vmess+websockets+tls+web，这种配置安全性比较高，因此很多人在搭建 V2Ray 时会选择这种方案。其中 https 加密也可以用 caddy 实现，而且比 nginx 更简单，当然我这里用的是 nginx+acme.sh 的组合实现的，其中 nginx 提供 web 页面内容，acme.sh 提供免费证书和自动续签。不过我在使用 nginx 的时候发现网上的很多教程是无法使用的，acme.sh 根本无法获取证书，原因就在于没有配置 80 端口的访问权限，这个问题困扰了我好几天，直到在一个 issue 上找到了解决办法，就是在 acme.sh 的读取路径配置添加 allow all。这里贴一下我的配置，如果有遇到问题可以参考一下。另外这个配置里我把一些没必要的配置给删除了，配置文件看起来更简洁，上面的方案应该也可以简化一下的。
+
+服务器端：
+
+.. code::
+
+    {
+        "log": {
+            "error": "/var/log/v2ray/error.log",
+            "loglevel": "warning"
+        },
+        "inbound": {
+            "protocol": "shadowsocks",
+            "listen": "127.0.0.1",
+            "port": 10086,
+            "settings": {
+                "method": "aes-128-gcm",
+                "password": "xxxxxxxxxxxxxxxx",
+                "level": 1
+            },
+            "streamSettings": {
+                "network": "ws",
+                "wsSettings": {
+                    "path": "/path"
+                }
+            }
+        },
+        "outbounds": [
+            {
+                "protocol": "freedom",
+                "tag": "direct",
+                "settings": {}
+            },
+            {
+                "protocol": "blackhole",
+                "tag": "blocked",
+                "settings": {}
+            }
+        ],
+        "routing": {
+            "domainStrategy": "AsIs",
+            "rules": [
+                {
+                    "type": "field",
+                    "ip": [
+                        "0.0.0.0/8",
+                        "10.0.0.0/8",
+                        "100.64.0.0/10",
+                        "127.0.0.0/8",
+                        "169.254.0.0/16",
+                        "172.16.0.0/12",
+                        "192.0.0.0/24",
+                        "192.0.2.0/24",
+                        "192.168.0.0/16",
+                        "198.18.0.0/15",
+                        "198.51.100.0/24",
+                        "203.0.113.0/24",
+                        "::1/128",
+                        "fc00::/7",
+                        "fe80::/10"
+                    ],
+                    "outboundTag": "blocked"
+                }
+            ]
+        }
+    }
+
+客户端：
+
+.. code::
+
+    {
+        "log": {
+            "error": "C:\\Users\\Sky\\Downloads\\PortableApps\\v2ray\\error.log",
+            "loglevel": "warning"
+        },
+        "inbounds": [
+            {
+                "protocol": "socks",
+                "port": 1080,
+                "sniffing": {
+                    "enabled": true,
+                    "destOverride": ["http", "tls"]
+                },
+                "settings": {
+                    "auth": "noauth",
+                    "udp": true
+                }
+            }
+        ],
+        "outbounds": [
+            {
+                "protocol": "shadowsocks",
+                "settings": {
+                    "servers": [
+                        {
+                            "address": "example.org",
+                            "port": 443,
+                            "method": "aes-128-gcm",
+                            "password": "xxxxxxxxxxxxxxxx",
+                            "level": 1
+                        }
+                    ]
+                },
+                "mux": {
+                    "enabled": true,
+                    "concurrency": 8
+                },
+                "streamSettings": {
+                    "network": "ws",
+                    "security": "tls",
+                    "tlsSettings": {
+                        "serverName": "example.org"
+                    },
+                    "wsSettings": {
+                        "host": [
+                            "example.org"
+                        ],
+                    "path": "/path"
+                    }
+                }
+            },
+            {
+                "protocol": "freedom",
+                "settings": {},
+                "tag": "direct"
+            },
+            {
+                "tag":"blocked",
+                "protocol":"blackhole",
+                "settings":{}
+            }
+        ],
+        "routing": {
+            "domainStrategy": "IPOnDemand",
+            "rules": [
+                {
+                    "type": "field",
+                    "port": "54-79",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "port": "81-442",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "port": "444-65535",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "domain": [
+                        "gc.kis.scr.kaspersky-labs.com"
+                    ],
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "domain": [
+                        "geosite:cn"
+                    ],
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "ip": [
+                        "geoip:cn",
+                        "geoip:private"
+                    ],
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "chinasites",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "chinaip",
+                    "outboundTag": "direct"
+                },
+                {
+                    "type": "field",
+                    "ip": [
+                        "0.0.0.0/8",
+                        "10.0.0.0/8",
+                        "100.64.0.0/10",
+                        "127.0.0.0/8",
+                        "169.254.0.0/16",
+                        "172.16.0.0/12",
+                        "192.0.0.0/24",
+                        "192.0.2.0/24",
+                        "192.168.0.0/16",
+                        "198.18.0.0/15",
+                        "198.51.100.0/24",
+                        "203.0.113.0/24",
+                        "::1/128",
+                        "fc00::/7",
+                        "fe80::/10"
+                    ],
+                    "outboundTag": "direct"
+                }
+            ]
+        }
+    }
+
+Nginx 80 端口配置文件 default：
+
+.. code:: nginx
+
+    ##
+    # You should look at the following URL's in order to grasp a solid understanding
+    # of Nginx configuration files in order to fully unleash the power of Nginx.
+    # https://www.nginx.com/resources/wiki/start/
+    # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls/
+    # https://wiki.debian.org/Nginx/DirectoryStructure
+    #
+    # In most cases, administrators will remove this file from sites-enabled/ and
+    # leave it as reference inside of sites-available where it will continue to be
+    # updated by the nginx packaging team.
+    #
+    # This file will automatically load configuration files provided by other
+    # applications, such as Drupal or Wordpress. These applications will be made
+    # available underneath a path with that package name, such as /drupal8.
+    #
+    # Please see /usr/share/doc/nginx-doc/examples/ for more detailed examples.
+    ##
+
+    # Default server configuration
+    #
+    server {
+            listen 80 default_server;
+            listen [::]:80 default_server;
+
+            # SSL configuration
+            #
+            # listen 443 ssl default_server;
+            # listen [::]:443 ssl default_server;
+            #
+            # Note: You should disable gzip for SSL traffic.
+            # See: https://bugs.debian.org/773332
+            #
+            # Read up on ssl_ciphers to ensure a secure configuration.
+            # See: https://bugs.debian.org/765782
+            #
+            # Self signed certs generated by the ssl-cert package
+            # Don't use them in a production server!
+            #
+            # include snippets/snakeoil.conf;
+
+            root /var/www/html;
+
+            # Add index.php to the list if you are using PHP
+            index index.html index.htm index.nginx-debian.html;
+
+            server_name _;
+
+            location / {
+                   return 301 https://$host$request_uri;
+            }
+
+            location ^~ /.well-known/acme-challenge/ {
+                    default_type "text/plain";
+                    root /var/www/html;
+                    allow all;
+            }
+
+            location = /.well-known/acme-challenge/ {
+                    try_files $uri =404;
+            }
+
+            # pass PHP scripts to FastCGI server
+            #
+            #location ~ \.php$ {
+            #       include snippets/fastcgi-php.conf;
+            #
+            #       # With php-fpm (or other unix sockets):
+            #       fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+            #       # With php-cgi (or other tcp sockets):
+            #       fastcgi_pass 127.0.0.1:9000;
+            #}
+
+            # deny access to .htaccess files, if Apache's document root
+            # concurs with nginx's one
+            #
+            #location ~ /\.ht {
+            #       deny all;
+            #}
+    }
+
+    # Virtual Host configuration for example.com
+    #
+    # You can move that to a different file under sites-available/ and symlink that
+    # to sites-enabled/ to enable it.
+    #
+    #server {
+    #       listen 80;
+    #       listen [::]:80;
+    #
+    #       server_name example.com;
+    #
+    #       root /var/www/example.com;
+    #       index index.html;
+    #
+    #       location / {
+    #               try_files $uri $uri/ =404;
+    #       }
+    #}
+
+Nginx 443 端口配置文件 example.org：
+
+.. code:: nginx
+
+    server {
+            listen 443 ssl http2 fastopen=128 reuseport;
+            listen [::]:443 ssl http2 fastopen=128 reuseport;
+            server_name example.org;
+
+            ssl_dhparam /etc/nginx/ssl/dhparam.pem;
+            ssl_certificate /etc/nginx/ssl/example.org.cer;
+            ssl_certificate_key /etc/nginx/ssl/example.org.key;
+            ssl_session_timeout 1d;
+            ssl_session_cache shared:SSL:50m;
+            ssl_session_tickets off;
+            ssl_protocols TLSv1.2;
+            ssl_prefer_server_ciphers on;
+            ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES25$
+
+            add_header Strict-Transport-Security max-age=15768000;
+            add_header X-Frame-Options SAMEORIGIN;
+            add_header X-Content-Type-Options nosniff;
+            add_header X-XSS-Protection "1; mode=block";
+
+            server_tokens off;
+            ssl_stapling on;
+            ssl_stapling_verify on;
+
+            location / {
+                    try_files $uri $uri/ =404;
+            }
+
+            location /path {
+                    proxy_redirect off;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "upgrade";
+                    proxy_set_header Host $http_host;
+                    proxy_intercept_errors on;
+
+                    # Show realip in v2ray access.log
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+                    if ($http_upgrade = "websocket" ){
+                            proxy_pass http://127.0.0.1:10086;
+                    }
+            }
+    }
+
+5、总结
+#######
+
+这上面的四个配置里，前两个比较简单，配置文件 copy 过去然后改一改就能用，后面两个的难度就比较大，需要对 linux 系统、https 网站的搭建等有一些经验才行，我就是因为没有搭建网站的经验所以在使用 nginx 的时候处处碰壁。由于这不是一个教程，所以基本上看了也不会配，主要是互联网上教程不胜枚举，github 上也有一些模板文件可供参考，再整一个类似的没什么意义。以上。
 
 2019/2/26
